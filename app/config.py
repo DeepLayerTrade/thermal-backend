@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     circling_rot_min: float = 3.0
     circling_vario_fpm_min: float = 50.0
     circling_vario_fpm_max: float = 2000.0   # >2000 fpm (~10 m/s) = Datenmüll/Windenstart
+    cluster_climb_max_ms: float = 6.0        # Säulen über 6 m/s werden nicht angezeigt
     cluster_radius_m: float = 800.0
     thermal_ttl_seconds: int = 15 * 60   # 15 min
 

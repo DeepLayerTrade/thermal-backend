@@ -114,7 +114,8 @@ def _visible_clusters() -> list[ThermalCluster]:
     now = datetime.now(timezone.utc)
     return [
         c for c in detector.clusters
-        if c.confidence >= 0.4 or (now - c.created_at) >= _SINGLE_GLIDER_GRACE
+        if c.climb_ms <= settings.cluster_climb_max_ms
+        and (c.confidence >= 0.4 or (now - c.created_at) >= _SINGLE_GLIDER_GRACE)
     ]
 
 app.add_middleware(
