@@ -28,7 +28,7 @@ echo "=== [4/6] Repo klonen / aktualisieren ==="
 if [ -d "$REPO_DIR/.git" ]; then
     git -C "$REPO_DIR" pull --ff-only
 else
-    git clone https://github.com/DEIN_ORG/thermal-backend.git "$REPO_DIR"
+    git clone https://github.com/DeepLayerTrade/thermal-backend.git "$REPO_DIR"
 fi
 cd "$REPO_DIR"
 
