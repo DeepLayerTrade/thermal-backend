@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     circling_vario_fpm_min: float = 50.0
     circling_vario_fpm_max: float = 2000.0   # >2000 fpm (~10 m/s) = Datenmüll/Windenstart
     cluster_radius_m: float = 800.0
-    thermal_ttl_seconds: int = 25 * 60   # 25 min
+    thermal_ttl_seconds: int = 15 * 60   # 15 min
 
     # --- Persistenz (Phase 4) ---
     redis_url: str = "redis://localhost:6379/0"

@@ -42,11 +42,12 @@ class ThermalCluster(BaseModel):
     lon: float
     climb_ms: float = 0.0            # Peak-Steigwert
     avg_climb_ms: float = 0.0
-    confidence: float = 0.0          # 0.0–1.0
+    confidence: float = 0.0          # 0.0–1.0 (basiert auf glider_count)
     alt_max_m: float = 0.0
     alt_min_m: float = 0.0
     glider_count: int = 0
     callsigns: list[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=_utcnow)
     updated_at: datetime = Field(default_factory=_utcnow)
     region_id: str = ""             # DWD-Segelflug-Gebiet
     weather_score: float = 0.0      # ICON-EU-Korrelation 0.0–1.0

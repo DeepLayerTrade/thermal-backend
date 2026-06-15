@@ -60,10 +60,13 @@ class ThermalDetector:
         cluster = self._nearest_cluster(beacon.lat, beacon.lon)
 
         if cluster is None:
+            now = datetime.now(timezone.utc)
             cluster = ThermalCluster(
                 id=str(uuid.uuid4()),
                 lat=beacon.lat,
                 lon=beacon.lon,
+                created_at=now,
+                updated_at=now,
             )
             self._clusters[cluster.id] = cluster
             self._climb_samples[cluster.id] = []
@@ -102,6 +105,7 @@ class ThermalDetector:
         if beacon.callsign and beacon.callsign not in cluster.callsigns:
             cluster.callsigns.append(beacon.callsign)
         cluster.glider_count = len(cluster.callsigns)
+        cluster.confidence = min(1.0, round(cluster.glider_count * 0.25, 2))
         cluster.updated_at = datetime.now(timezone.utc)
 
     def decay(self, now: datetime | None = None) -> int:

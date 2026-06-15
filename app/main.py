@@ -9,7 +9,9 @@ PostgreSQL: Historische Snapshots alle 60 s.
 import asyncio
 import contextlib
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+_SINGLE_GLIDER_GRACE = timedelta(minutes=3)
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -100,7 +102,20 @@ async def lifespan(app: FastAPI):
         log.info("Lifespan: sauber gestoppt")
 
 
-app = FastAPI(title="Thermal Backend", version="0.3.0", lifespan=lifespan)
+app = FastAPI(title="Thermal Backend", version="0.4.0", lifespan=lifespan)
+
+
+def _visible_clusters() -> list[ThermalCluster]:
+    """Gibt nur Säulen zurück, die die Confidence-Schwelle erfüllen.
+
+    Einzelsegler (confidence < 0.4) werden erst nach 3 min angezeigt,
+    um Kurvenflug-False-Positives herauszufiltern.
+    """
+    now = datetime.now(timezone.utc)
+    return [
+        c for c in detector.clusters
+        if c.confidence >= 0.4 or (now - c.created_at) >= _SINGLE_GLIDER_GRACE
+    ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -116,7 +131,8 @@ async def healthz() -> dict:
     return {
         "status": "ok",
         "version": app.version,
-        "thermals": len(detector.clusters),
+        "thermals": len(_visible_clusters()),
+        "thermals_pending": len(detector.clusters) - len(_visible_clusters()),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -124,7 +140,7 @@ async def healthz() -> dict:
 
 @app.get("/api/thermals", response_model=list[ThermalCluster])
 async def list_thermals() -> list[ThermalCluster]:
-    return detector.clusters
+    return _visible_clusters()
 
 
 @app.get("/api/thermals/{thermal_id}", response_model=ThermalCluster)
@@ -172,7 +188,7 @@ async def ws_thermals(websocket: WebSocket) -> None:
     try:
         while True:
             update = ThermalUpdate(
-                thermals=detector.clusters,
+                thermals=_visible_clusters(),
                 regions=[],
                 timestamp=datetime.now(timezone.utc),
             )
