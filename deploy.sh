@@ -1,10 +1,10 @@
 #!/bin/bash
 # deploy.sh — Einmaliges Server-Setup auf Ubuntu 24.04 (Hetzner CX22)
-# Aufruf: bash deploy.sh <DOMAIN>
+# Aufruf: bash deploy.sh 152-53-139-254.sslip.io
 # Beispiel: bash deploy.sh thermal.juflie.app
 set -euo pipefail
 
-DOMAIN="${1:?Usage: bash deploy.sh <DOMAIN>}"
+DOMAIN="${1:?Usage: bash deploy.sh 152-53-139-254.sslip.io}"
 REPO_DIR="/opt/thermal-backend"
 
 echo "=== [1/6] System-Pakete ==="
@@ -38,7 +38,7 @@ if [ ! -f .env.prod ]; then
     # Zufälliges Passwort generieren
     PG_PASS=$(openssl rand -hex 24)
     sed -i "s/SICHERES_PASSWORT_HIER_EINTRAGEN/$PG_PASS/g" .env.prod
-    sed -i "s/<DOMAIN>/$DOMAIN/g" .env.prod
+    sed -i "s/152-53-139-254.sslip.io/$DOMAIN/g" .env.prod
     echo ""
     echo "  ⚠️  .env.prod wurde angelegt. Bitte prüfen:"
     echo "  nano $REPO_DIR/.env.prod"
@@ -46,7 +46,7 @@ if [ ! -f .env.prod ]; then
 fi
 
 # Domain im nginx-Config eintragen
-sed -i "s/<DOMAIN>/$DOMAIN/g" nginx/thermal.conf
+sed -i "s/152-53-139-254.sslip.io/$DOMAIN/g" nginx/thermal.conf
 
 echo "=== [6/6] TLS-Zertifikat (Let's Encrypt) ==="
 if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
