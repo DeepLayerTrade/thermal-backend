@@ -1,0 +1,31 @@
+# Lokale/Server-Orchestrierung. Phase 1: nur 'api' nötig.
+# postgres/redis sind für Phase 4 vorbereitet (auskommentiert lassen bis dahin).
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    restart: unless-stopped
+    # depends_on:
+    #   - postgres
+    #   - redis
+
+  # postgres:
+  #   image: postgis/postgis:16-3.4
+  #   environment:
+  #     POSTGRES_USER: thermal
+  #     POSTGRES_PASSWORD: thermal
+  #     POSTGRES_DB: thermal
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+
+# volumes:
+#   pgdata:

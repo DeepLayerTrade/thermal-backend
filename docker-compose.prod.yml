@@ -1,0 +1,57 @@
+services:
+
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env.prod
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - internal
+    # Kein Port nach außen — nur Nginx spricht mit der API
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: thermal
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: thermal
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    # Kein Port nach außen — nur intern erreichbar
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redisdata:/data
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/thermal.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - api
+    networks:
+      - internal
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  internal:
+    driver: bridge

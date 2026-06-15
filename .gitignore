@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtuelle Umgebungen
+.venv/
+venv/
+env/
+
+# Secrets / lokale Konfiguration
+.env
+.env.prod
+
+# Daten-Caches
+grib_cache/
+*.grib2
+*.idx
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
