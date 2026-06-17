@@ -9,9 +9,7 @@ PostgreSQL: Historische Snapshots alle 60 s.
 import asyncio
 import contextlib
 import logging
-from datetime import datetime, timedelta, timezone
-
-_SINGLE_GLIDER_GRACE = timedelta(minutes=3)
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -76,7 +74,10 @@ async def lifespan(app: FastAPI):
     if cached:
         for c in cached:
             detector._clusters[c.id] = c
-            detector._climb_samples[c.id] = [c.avg_climb_ms]
+            # validierten Beleg rekonstruieren, damit Aggregation weiterläuft
+            detector._cluster_gliders[c.id] = {
+                "__restored__": (c.climb_ms or c.avg_climb_ms, c.circles_max)
+            }
         log.info("Redis: %d Säulen wiederhergestellt", len(cached))
 
     # Background-Tasks
@@ -106,17 +107,13 @@ app = FastAPI(title="Thermal Backend", version="0.4.0", lifespan=lifespan)
 
 
 def _visible_clusters() -> list[ThermalCluster]:
-    """Gibt nur Säulen zurück, die die Confidence-Schwelle erfüllen.
+    """Gibt anzeigbare Säulen zurück.
 
-    Einzelsegler (confidence < 0.4) werden erst nach 3 min angezeigt,
-    um Kurvenflug-False-Positives herauszufiltern.
+    Die False-Positive-Filterung passiert bereits bei der Erkennung
+    (Track-Validierung: kreisend gestiegen). Hier bleibt nur der obere
+    Sanity-Cap gegen unplausible Steigwerte.
     """
-    now = datetime.now(timezone.utc)
-    return [
-        c for c in detector.clusters
-        if c.climb_ms <= settings.cluster_climb_max_ms
-        and (c.confidence >= 0.4 or (now - c.created_at) >= _SINGLE_GLIDER_GRACE)
-    ]
+    return [c for c in detector.clusters if c.climb_ms <= settings.cluster_climb_max_ms]
 
 app.add_middleware(
     CORSMiddleware,

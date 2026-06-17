@@ -40,9 +40,10 @@ class ThermalCluster(BaseModel):
     id: str
     lat: float
     lon: float
-    climb_ms: float = 0.0            # Peak-Steigwert
+    climb_ms: float = 0.0            # Peak realisierter Steig (Δh/Δt), nicht instantan
     avg_climb_ms: float = 0.0
-    confidence: float = 0.0          # 0.0–1.0 (basiert auf glider_count)
+    circles_max: float = 0.0         # meiste Kreise eines Seglers in dieser Säule
+    confidence: float = 0.0          # 0.0–1.0 (validierte Segler)
     alt_max_m: float = 0.0
     alt_min_m: float = 0.0
     glider_count: int = 0

@@ -25,6 +25,19 @@ class Settings(BaseSettings):
     cluster_radius_m: float = 800.0
     thermal_ttl_seconds: int = 15 * 60   # 15 min
 
+    # --- Track-Validierung (echte Säule statt Vario-Spike) ---
+    # Pro Segler wird ein gleitendes Fenster geführt. Eine Säule entsteht nur,
+    # wenn ein Segler darin nachweislich kreisend GESTIEGEN ist. Das schlägt den
+    # instantanen vario_fpm-Spike (Böe, Abfangbogen, Windenstart, Sensorrauschen):
+    # dessen realisierter Steig (Δh/Δt) ist ~0.
+    track_window_seconds: float = 120.0   # gleitendes Fenster je Segler
+    # |rot| ist ~½-Turns/min → volle Kreise = Σ |rot|/2 · dt/60.
+    min_circles: float = 3.0              # nötige volle Kreise für eine gültige Säule
+    min_alt_gain_m: float = 30.0          # realer Höhengewinn in der Steigphase
+    # Untergrenze für realisierten Steig — bewusst niedrig, damit schwache
+    # Thermik (<1,5 m/s) sichtbar bleibt; filtert nur Nicht-Steiger raus.
+    min_realized_climb_ms: float = 0.5
+
     # --- Persistenz (Phase 4) ---
     redis_url: str = "redis://localhost:6379/0"
     database_url: str = "postgresql://thermal:thermal@localhost:5432/thermal"
